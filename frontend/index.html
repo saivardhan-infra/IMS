@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IMS Dashboard</title>
+</head>
+<body>
+  <h1>Incidents</h1>
+  <button onclick="load()">Refresh</button>
+  <ul id="list"></ul>
 
+<script>
+async function load() {
+  let res = await fetch("http://localhost:8000/incidents");
+  let data = await res.json();
+
+  let list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(i => {
+    let li = document.createElement("li");
+    li.innerText = `ID:${i.id} | ${i.component_id} | ${i.status}`;
+    list.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>
