@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from datetime import datetime
 import time
@@ -6,6 +7,13 @@ from models import Signal, RCA
 from database import incidents, signals, cache
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 🔹 Signal ingestion + debouncing
 @app.post("/signals")
