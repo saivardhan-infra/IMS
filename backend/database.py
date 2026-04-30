@@ -1,1 +1,3 @@
-
+incidents = {}
+signals = []
+cache = {}
