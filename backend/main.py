@@ -1,6 +1,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from datetime import datetime
+import time
+import threading
 
 from models import Signal, RCA
 from database import incidents, signals, cache
@@ -16,23 +18,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔹 Signal ingestion + debouncing (FIXED)
+# 🔹 Signal ingestion + debouncing (FINAL)
 @app.post("/signals")
 def ingest(signal: Signal):
     comp = signal.component_id
-    current_ts = signal.timestamp.timestamp()
+    current_ts = time.time()
 
+    # If incident exists in last 10 seconds → link
     if comp in cache:
         inc_id, last_ts = cache[comp]
 
-        # ✅ Compare using SIGNAL timestamp
-        if current_ts - last_ts < 10:
-            cache[comp] = (inc_id, current_ts)
+        if current_ts - last_ts <= 10:
             signals.append({**signal.dict(), "incident_id": inc_id})
-            return {"msg": "linked to existing incident", "incident_id": inc_id}
 
-    # 🔹 Create new incident
+            # update last seen time
+            cache[comp] = (inc_id, current_ts)
+
+            return {"msg": "linked", "incident_id": inc_id}
+
+    # Create new incident
     inc_id = len(incidents) + 1
+
     incidents[inc_id] = {
         "id": inc_id,
         "component_id": comp,
@@ -42,10 +48,12 @@ def ingest(signal: Signal):
         "rca": None
     }
 
-    cache[comp] = (inc_id, current_ts)
     signals.append({**signal.dict(), "incident_id": inc_id})
 
-    return {"msg": "new incident created", "incident_id": inc_id}
+    # store in cache
+    cache[comp] = (inc_id, current_ts)
+
+    return {"msg": "created", "incident_id": inc_id}
 
 
 # 🔹 Get all incidents
@@ -101,16 +109,13 @@ def close(id: int):
     return {"msg": "closed", "MTTR": mttr}
 
 
-# 🔹 Health
+# 🔹 Health check
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
 # 🔹 Observability
-import threading
-import time
-
 def log_metrics():
     while True:
         print(f"Total signals received: {len(signals)}")
