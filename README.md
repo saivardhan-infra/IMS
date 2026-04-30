@@ -1,47 +1,121 @@
-# Incident Management System (IMS)
+# 🚀 Incident Management System (IMS)
 
-## Overview
-The Incident Management System (IMS) is designed to help organizations efficiently manage and resolve incidents. This system aims to streamline the incident reporting process, track ongoing incidents, and provide management tools for incident resolution teams.
+## 📌 Overview
 
-## Features
-- **Incident Reporting**: Users can report incidents easily via a user-friendly interface.
-- **Real-Time Tracking**: Track incidents in real-time with status updates.
-- **Reporting and Analytics**: Generate reports to analyze incident trends, response times, and resolution performance.
-- **User Management**: Manage user roles and permissions.
+This project is a simple Incident Management System built for an Infrastructure/SRE assignment.
 
-## Technologies Used
-- Frontend: React, Redux
-- Backend: Node.js, Express
-- Database: MongoDB
-
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/saivardhan-infra/IMS.git
-   ```
-2. Change into the project directory:
-   ```bash
-   cd IMS
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the application:
-   ```bash
-   npm start
-   ```
-
-## Contributing
-We welcome contributions from the community. Please ensure to follow the [contribution guidelines](CONTRIBUTING.md).
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-For any inquiries, please contact the project maintainer.
+It focuses on handling large volumes of system signals and reducing alert noise using **time-based debouncing**, similar to real-world monitoring systems.
 
 ---
 
-## Current Date and Time
-As of 2026-04-30 09:01:57 UTC, this document serves as a comprehensive overview for the Incident Management System project.
+## 💡 Problem
+
+In production systems, a single failure (like a DB issue) can generate many alerts.
+Creating an incident for each alert leads to noise and confusion.
+
+This system solves that by grouping related signals into a single incident.
+
+---
+
+## ⚙️ Features
+
+* Signal ingestion via API
+* 10-second debouncing window
+* Incident creation and grouping
+* Incident lifecycle (OPEN → CLOSED)
+* RCA required before closing
+* MTTR calculation
+* Simple dashboard
+* Docker-based setup
+
+---
+
+## 🏗️ Architecture
+
+```text
+Client (curl/UI)
+        ↓
+FastAPI Backend
+        ↓
+Debounce Logic (10s window)
+        ↓
+In-memory Store
+        ↓
+Frontend Dashboard
+```
+
+---
+
+## 🧠 Key Design Decision
+
+### Debouncing Logic
+
+If multiple signals for the same component arrive within 10 seconds:
+👉 They are grouped into one incident
+👉 Prevents duplicate incidents
+
+---
+
+## 🚀 Run the Project
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## 🌐 Access
+
+* Backend → http://localhost:8000
+* Frontend → http://localhost:3000
+
+---
+
+## 📡 Example API
+
+```bash
+curl -X POST http://localhost:8000/signals \
+-H "Content-Type: application/json" \
+-d '{"component_id":"DB","message":"error","timestamp":"2026-01-01T10:00:00"}'
+```
+
+---
+
+## 🧪 Behavior
+
+* Multiple signals within 10 sec → same incident
+* Signals after 10 sec → new incident
+
+---
+
+## 📁 Structure
+
+```text
+backend/   - FastAPI service
+frontend/  - UI
+scripts/   - test scripts
+prompts/   - AI prompts used
+```
+
+---
+
+## 🔐 Limitations
+
+* In-memory storage (no persistence)
+* No authentication
+* Single-node system
+
+---
+
+## 🔮 Improvements
+
+* Add PostgreSQL
+* Add Redis
+* Use Kafka for streaming
+* Add monitoring (Prometheus)
+
+---
+
+## 👨‍💻 Author
+
+Sai Vardhan
