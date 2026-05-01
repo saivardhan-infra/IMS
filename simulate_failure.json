@@ -1,0 +1,5 @@
+[
+  {"component_id": "DB_CLUSTER", "message": "connection timeout"},
+  {"component_id": "DB_CLUSTER", "message": "connection timeout"},
+  {"component_id": "CACHE_CLUSTER", "message": "latency spike"}
+]
